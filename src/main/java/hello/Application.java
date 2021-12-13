@@ -91,19 +91,19 @@ public class Application {
 
     @PostMapping("/**")
     public String index(@RequestBody ArenaUpdate arenaUpdate) {
-        System.out.println(arenaUpdate);
         Map<String, PlayerState> statesOfPlayers = arenaUpdate.arena.state;
         PlayerState myState = statesOfPlayers.get(MYSELF);
 
-        if (myState == null) {
-            return "T";
-        }
 
-        List<PlayerState> playersStates = statesOfPlayers.entrySet().stream().filter(it -> !it.getKey().equals(MYSELF)).map(Map.Entry::getValue).collect(Collectors.toList());
+        Stream<PlayerState> playersStatesStream = statesOfPlayers.entrySet()
+                .stream()
+                .filter(it -> !it.getKey().equals(MYSELF))
+                .map(Map.Entry::getValue);
 
-        if (thereIsSomebodyOnMyWay(playersStates, myState)) {
+        if (thereIsSomebodyOnMyWay(playersStatesStream, myState)) {
             return "T";
         } else {
+            List<PlayerState> playersStates = playersStatesStream.collect(Collectors.toList());
             if (thereIsSomeoneOnMyRight(playersStates, myState)) {
                 return "R";
             } else if (thereIsSomeoneOnMyLeft(playersStates, myState)) {
@@ -125,63 +125,56 @@ public class Application {
     }
 
     private boolean thereIsSomeoneOnMyRight(List<PlayerState> players, PlayerState myState) {
-        if (myState.direction.equals("N")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("E"));
-        } else if (myState.direction.equals("E")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("S"));
-        } else if (myState.direction.equals("S")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("W"));
-        } else if (myState.direction.equals("W")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("N"));
-        } else {
-            return false;
+        switch (myState.direction) {
+            case "N":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("E"));
+            case "E":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("S"));
+            case "S":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("W"));
+            case "W":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("N"));
+            default:
+                return false;
         }
     }
 
     private boolean thereIsSomeoneOnMyLeft(List<PlayerState> players, PlayerState myState) {
-        if (myState.direction.equals("N")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("W"));
-        } else if (myState.direction.equals("E")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("N"));
-        } else if (myState.direction.equals("S")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("E"));
-        } else if (myState.direction.equals("W")) {
-            return thereIsSomebodyOnMyWay(players, myState.withDirection("S"));
-        } else {
-            return false;
+        switch (myState.direction) {
+            case "N":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("W"));
+            case "E":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("N"));
+            case "S":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("E"));
+            case "W":
+                return thereIsSomebodyOnMyWay(players, myState.withDirection("S"));
+            default:
+                return false;
         }
     }
 
-    private boolean thereIsSomebodyOnMyWay(List<PlayerState> players, PlayerState myState) {
+    private boolean thereIsSomebodyOnMyWay(Stream<PlayerState> players, PlayerState myState) {
         int myXCooridinate = myState.x;
         int myYCooridinate = myState.y;
 
-        if (myState.direction.equals("N")) {
-            return players.stream()
-                    .filter(it -> it.x == myXCooridinate)
-                    .filter(it -> it.y <= myYCooridinate)
-                    .filter(it -> Math.abs(it.y - myYCooridinate) <= THROW_DISTANCE)
-                    .findAny()
-                    .isPresent();
-        } else if (myState.direction.equals("S")) {
-            return players.stream()
-                    .filter(it -> it.x == myXCooridinate)
-                    .filter(it -> it.y >= myYCooridinate)
-                    .filter(it -> Math.abs(it.y - myYCooridinate) <= THROW_DISTANCE)
-                    .findAny()
-                    .isPresent();
-        } else if (myState.direction.equals("E")) {
-            return players.stream().filter(it -> it.y == myYCooridinate)
-                    .filter(it -> it.x >= myXCooridinate)
-                    .filter(it -> Math.abs(it.x - myXCooridinate) <= THROW_DISTANCE)
-                    .findAny()
-                    .isPresent();
-        } else if (myState.direction.equals("W")) {
-            return players.stream().filter(it -> it.y == myYCooridinate)
-                    .filter(it -> it.x <= myXCooridinate)
-                    .filter(it -> Math.abs(it.x - myXCooridinate) <= THROW_DISTANCE)
-                    .findAny()
-                    .isPresent();
+        switch (myState.direction) {
+            case "N":
+                return players.filter(it -> it.x == myXCooridinate)
+                        .filter(it -> it.y <= myYCooridinate)
+                        .anyMatch(it -> Math.abs(it.y - myYCooridinate) <= THROW_DISTANCE);
+            case "S":
+                return players.filter(it -> it.x == myXCooridinate)
+                        .filter(it -> it.y >= myYCooridinate)
+                        .anyMatch(it -> Math.abs(it.y - myYCooridinate) <= THROW_DISTANCE);
+            case "E":
+                return players.filter(it -> it.y == myYCooridinate)
+                        .filter(it -> it.x >= myXCooridinate)
+                        .anyMatch(it -> Math.abs(it.x - myXCooridinate) <= THROW_DISTANCE);
+            case "W":
+                return players.filter(it -> it.y == myYCooridinate)
+                        .filter(it -> it.x <= myXCooridinate)
+                        .anyMatch(it -> Math.abs(it.x - myXCooridinate) <= THROW_DISTANCE);
         }
 
         return false;
