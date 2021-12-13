@@ -161,10 +161,15 @@ public class Application {
                 .filter(it -> !it.getKey().equals(MYSELF))
                 .map(Map.Entry::getValue);
 
+
         if (thereIsSomebodyOnMyWay(playersStatesStream, myState)) {
             return "T";
         } else {
-            List<PlayerState> playersStates = playersStatesStream.collect(Collectors.toList());
+            List<PlayerState> playersStates = statesOfPlayers.entrySet()
+                    .stream()
+                    .filter(it -> !it.getKey().equals(MYSELF))
+                    .map(Map.Entry::getValue)
+                    .collect(Collectors.toList());
             if (thereIsSomeoneOnMyRight(playersStates.stream(), myState)) {
                 return "R";
             } else if (thereIsSomeoneOnMyLeft(playersStates.stream(), myState)) {
