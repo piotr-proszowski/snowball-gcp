@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 @RestController
 public class Application {
 
-  private static String MYSELF = "https://java-springboot-qfkijwitea-uc.a.run.app/";
+  private static String MYSELF = "https://34.149.220.180.sslip.io/";
   private static int THROW_DISTANCE = 3;
 
   static class Self {
