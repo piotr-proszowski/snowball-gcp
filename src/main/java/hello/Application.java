@@ -73,6 +73,10 @@ public class Application {
     Map<String, PlayerState> statesOfPlayers = arenaUpdate.arena.state;
     PlayerState myState = statesOfPlayers.get(MYSELF);
 
+    if(myState == null) {
+        return "T";
+    }
+
     List<PlayerState> playersStates = statesOfPlayers.entrySet().stream().filter(it -> !it.getKey().equals(MYSELF)).map(it -> it.getValue()).collect(Collectors.toList());
 
     if(thereIsSomebodyOnMyWay(playersStates, myState)) {
